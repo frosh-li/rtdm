@@ -66,10 +66,11 @@ var query = function(sql,sqlCount, offset, limit){
 					}
 					return resolve({
 						data: results,
-						total: parseInt(ret.results[0][0]) || 0
+						total: parseInt(ret.results && ret.results[0] && ret.results[0][0]) || 0
 					});
-				}catch(error){				
-					return reject('can not parse data to json');
+				}catch(error){
+					console.log(body)				
+					return reject('can not parse data to json count');
 				};
 			});	
 		});
