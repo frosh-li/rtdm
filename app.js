@@ -5,6 +5,8 @@ var getData = require('./server.js');
 var offset = 0;
 var limit = 10;
 
+var sqls = require('./sqls/index.js');
+/*
 var sqls = {
 	'trade': 'SELECT DIM_DAY.DATEKEY,D05_TRADE_ORDER_CODE.ORDER_CODE_name,count(1) as order_cnts,sum(S06_FFAN_TRADE_ORDER_SUM.ORIG_AMOUNT) as ORIG_AMOUNT ,sum(S06_FFAN_TRADE_ORDER_SUM.TRADE_AMOUNT) as TRADE_AMOUNT FROM DWS.S06_FFAN_TRADE_ORDER_SUM as S06_FFAN_TRADE_ORDER_SUM  LEFT JOIN FFAN.DIM_DAY as DIM_DAY ON S06_FFAN_TRADE_ORDER_SUM.TRANS_DT = DIM_DAY.DATEKEY LEFT JOIN DIM.D05_TRADE_ORDER_CODE as D05_TRADE_ORDER_CODE ON S06_FFAN_TRADE_ORDER_SUM.ORDER_CODE = D05_TRADE_ORDER_CODE.ORDER_CODE where DIM_DAY.DATEKEY >=\'{{start}}\' and DIM_DAY.DATEKEY <= \'{{end}}\' {{filters}} group by D05_TRADE_ORDER_CODE.ORDER_CODE_name,DIM_DAY.DATEKEY',
 	'movie':'SELECT A06_PRODUCT_KPI_MOVIE.DATE_KEY,D06_APP_CLIENT.client_name,sum(A06_PRODUCT_KPI_MOVIE.MOVIE_PAGE),sum(A06_PRODUCT_KPI_MOVIE.DETAIL_PAGE),sum(A06_PRODUCT_KPI_MOVIE.CHOOSETICKET),sum(A06_PRODUCT_KPI_MOVIE.SELECTSEAT),sum(A06_PRODUCT_KPI_MOVIE.ORDER_PAGE),sum(A06_PRODUCT_KPI_MOVIE.ORDER_CNTS),sum(A06_PRODUCT_KPI_MOVIE.TICKET_CNTS),sum(A06_PRODUCT_KPI_MOVIE.PAY_SUCCESS),sum(A06_PRODUCT_KPI_MOVIE.PAY_ORDER_CNTS),sum(A06_PRODUCT_KPI_MOVIE.CHANGE_ORDER_RATE),sum(A06_PRODUCT_KPI_MOVIE.REFUND_ORDER_CNTS) FROM APP.A06_PRODUCT_KPI_MOVIE as A06_PRODUCT_KPI_MOVIE LEFT JOIN FFAN.DIM_DAY as DIM_DAY ON A06_PRODUCT_KPI_MOVIE.DATE_KEY = DIM_DAY.DATEKEY LEFT JOIN DIM.D06_APP_CLIENT as D06_APP_CLIENT ON A06_PRODUCT_KPI_MOVIE.OS_VERSION = D06_APP_CLIENT.ID where DIM_DAY.DATEKEY >=\'{{start}}\' and DIM_DAY.DATEKEY <= \'{{end}}\' {{filters}} group by  D06_APP_CLIENT.client_name,A06_PRODUCT_KPI_MOVIE.DATE_KEY',
@@ -14,8 +16,9 @@ var sqls = {
 	'carorder':'SELECT A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.DT,SUM(A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.ORDER_NUM),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.NUM_9003),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.NUM_9004),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.COUPON_ORDER_NUM),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.REDUCE_ORDER_NUM),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.COUPON_REDUCE_NUM) ,SUM(A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.ORDER_AVERAGE_TIME) FROM APP.A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS as A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS  Where A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.DT >= \'{{start}}\' and A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.DT <= \'{{end}}\' {{filters}} GROUP BY A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.DT',
 	'cartrade':'select A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.DT,SUM(A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.E_CASH),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.CASH),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.COUPON_MONEY),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.REDUCE_MONEY),SUM(A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.MONEY) FROM APP.A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS as A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS Where A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.DT >= \'{{start}}\' and A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.DT <= \'{{end}}\' {{filters}} GROUP BY A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.DT'
 };
-
+*/
 // 获取总记录数的sql
+/*
 var sqlsCount = {
 	'trade': 'SELECT count(1) FROM DWS.S06_FFAN_TRADE_ORDER_SUM as S06_FFAN_TRADE_ORDER_SUM  LEFT JOIN FFAN.DIM_DAY as DIM_DAY ON S06_FFAN_TRADE_ORDER_SUM.TRANS_DT = DIM_DAY.DATEKEY LEFT JOIN DIM.D05_TRADE_ORDER_CODE as D05_TRADE_ORDER_CODE ON S06_FFAN_TRADE_ORDER_SUM.ORDER_CODE = D05_TRADE_ORDER_CODE.ORDER_CODE where DIM_DAY.DATEKEY >=\'{{start}}\' and DIM_DAY.DATEKEY <= \'{{end}}\' {{filters}}',
 	'movie':'SELECT count(1) FROM APP.A06_PRODUCT_KPI_MOVIE as A06_PRODUCT_KPI_MOVIE LEFT JOIN FFAN.DIM_DAY as DIM_DAY ON A06_PRODUCT_KPI_MOVIE.DATE_KEY = DIM_DAY.DATEKEY LEFT JOIN DIM.D06_APP_CLIENT as D06_APP_CLIENT ON A06_PRODUCT_KPI_MOVIE.OS_VERSION = D06_APP_CLIENT.ID where DIM_DAY.DATEKEY >=\'{{start}}\' and DIM_DAY.DATEKEY <= \'{{end}}\' {{filters}}',
@@ -25,7 +28,7 @@ var sqlsCount = {
 	'carorder':'SELECT count(1) FROM APP.A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS as A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS Where A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.DT >= \'{{start}}\' and A06_FFAN_BI_KPI_PARKING_PARKING_ORDER_STATISTICS.DT <= \'{{end}}\' {{filters}}',
 	'cartrade':'select count(1) FROM APP.A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS as A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS Where A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.DT >= \'{{start}}\' and A06_FFAN_BI_KPI_PARKING_PARKING_TRADE_STATISTICS.DT <= \'{{end}}\' {{filters}}'	
 };
-
+*/
 
 //设置跨域访问  
 app.all('*', function(req, res, next) {  
@@ -37,7 +40,8 @@ app.all('*', function(req, res, next) {
 });  
 
 
-['trade', 'movie', 'shake', 'redbag', 'coupon', 'carorder', 'cartrade'].forEach(function(item){
+console.log(sqls, Object.keys(sqls));
+Object.keys(sqls).forEach(function(item){
 	app.get('/api/'+item, function (req, res) {
 		var c_offset = parseInt(req.query.offset) || offset;
 	    var c_limit = parseInt(req.query.limit) || limit;
@@ -70,7 +74,11 @@ app.all('*', function(req, res, next) {
 			sql = sql.replace('{{filters}}', "");
 		}
 			
-	  	var sqlCount = sqlsCount[item].replace('{{start}}',start).replace('{{end}}',end);
+	  	var sqlCount = sqls[item]
+		  				  .replace(/select.*from+?/gi, 'select count(1) from')
+						  .replace(/group\s+by.*$/,"")
+						  .replace('{{start}}',start)
+						  .replace('{{end}}',end);
 		if(qFilter.length > 0){
 			sqlCount = sqlCount.replace('{{filters}}', " and " + qFilter.join(' and '));
 		}else{
@@ -78,14 +86,39 @@ app.all('*', function(req, res, next) {
 		}
 	  	// res.json({status: 200, data: sql});
 	  	console.log(sql);
+		console.log(sqlCount);
 		getData(sql,sqlCount, c_offset, c_limit).then(function(ret){
 			res.json({stauts:200, data: ret.data, total:ret.total});	
 		}).catch(function(e){
 			console.log(e);
-			res.json({status: 500, msg:'服务器故障'});
+			res.json({status: 500, msg:'服务器故障',detail:e.message});
 		});
 	});
 });
+
+app.post('/updateSql', function(req,res, next){
+	var filename = req.body.name;
+	if(!/^[a-z]+$/.test(filename)){
+		return res.json({
+			status: 500,
+			msg:'只能输入英文'
+		})
+	}
+	var sqlContent = req.body.sql;
+	fs.writeFile(path.resovle(__dirname+"/"+slqs+"/"+filename+".sql"), sqlContent, function(err, data){
+		if(err){
+			return res.json({
+				status: 500,
+				msg:'写文件出错'
+			})
+		}
+		res.json({
+			status:200,
+			msg:'提交成功',
+			sql: data
+		})
+	})
+})
 
 var server = app.listen(10000, function () {
 var host = server.address().address;

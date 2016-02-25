@@ -13,6 +13,8 @@ var options = {
 	}
 };
 var query = function(sql,sqlCount, offset, limit){
+	console.log(sql)
+	console.log(sqlCount)
 	return new Promise(function(resolve, reject){
 		if(!sql || !sqlCount){
 			return reject('sql can not be empty');
@@ -37,7 +39,7 @@ var query = function(sql,sqlCount, offset, limit){
 				// console.log('get data success', ret);
 				if(ret.exception){
 					console.log(ret.exception);
-					return reject(ret.exception);
+					return reject(ret.exception+sql);
 				}
 				return resolve(ret.results);
 			}catch(error){				
@@ -62,7 +64,7 @@ var query = function(sql,sqlCount, offset, limit){
 					// console.log('get data success', ret);
 					if(ret.exception){
 						console.log(ret.exception);
-						return reject(ret.exception);
+						return reject(ret.exception+sqlCount);
 					}
 					return resolve({
 						data: results,
