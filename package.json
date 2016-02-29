@@ -9,8 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "excel-export": "^0.5.1",
     "express": "^4.13.4",
-    "request": "^2.69.0",
-    "promise":"*"
+    "promise": "*",
+    "request": "^2.69.0"
   }
 }

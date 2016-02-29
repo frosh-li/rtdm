@@ -1,5 +1,14 @@
 var express = require('express');
 var app = express();
+var fs = require('fs');
+var path = require('path');
+var bodyParser = require('body-parser')
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+
 var getData = require('./server.js');
 
 var offset = 0;
@@ -42,7 +51,7 @@ app.all('*', function(req, res, next) {
 
 console.log(sqls, Object.keys(sqls));
 Object.keys(sqls).forEach(function(item){
-	app.get('/api/'+item, function (req, res) {
+	app.get('/api/'+item, function (req, res, next) {
 		var c_offset = parseInt(req.query.offset) || offset;
 	    var c_limit = parseInt(req.query.limit) || limit;
 	    var end = new Date().toLocaleString().split(' ')[0];
@@ -56,11 +65,12 @@ Object.keys(sqls).forEach(function(item){
 	    if(req.query.end && dateReg.test(req.query.end)){
 	    	end = req.query.end;
 	    }
-		var filters = ['client_name'];
+		var filters = ['client_name','status'];
 		var qFilter = [];
 		filters.forEach(function(filter){
-			if(req.query[filter] && req.query[filter].toLowerCase() !== "all"){
-				qFilter.push(filter+"='"+req.query[filter]+"'");	
+			var val = req.query[filter] && decodeURIComponent(req.query[filter]);
+			if(val && val.toLowerCase() !== "all" && val!="不限"){
+				qFilter.push(filter+"='"+val+"'");	
 			}
 		})
 		
@@ -88,7 +98,7 @@ Object.keys(sqls).forEach(function(item){
 	  	console.log(sql);
 		console.log(sqlCount);
 		getData(sql,sqlCount, c_offset, c_limit).then(function(ret){
-			res.json({stauts:200, data: ret.data, total:ret.total});	
+			res.json({stauts:200, data: ret.data, total:ret.total, page: c_offset/c_limit + 1});	
 		}).catch(function(e){
 			console.log(e);
 			res.json({status: 500, msg:'服务器故障',detail:e.message});
@@ -97,6 +107,7 @@ Object.keys(sqls).forEach(function(item){
 });
 
 app.post('/updateSql', function(req,res, next){
+	console.log(req.body);
 	var filename = req.body.name;
 	if(!/^[a-z]+$/.test(filename)){
 		return res.json({
@@ -105,7 +116,7 @@ app.post('/updateSql', function(req,res, next){
 		})
 	}
 	var sqlContent = req.body.sql;
-	fs.writeFile(path.resovle(__dirname+"/"+slqs+"/"+filename+".sql"), sqlContent, function(err, data){
+	fs.writeFile(path.resolve(__dirname+"/sqls/"+filename+".sql"), sqlContent, function(err, data){
 		if(err){
 			return res.json({
 				status: 500,
@@ -119,6 +130,10 @@ app.post('/updateSql', function(req,res, next){
 		})
 	})
 })
+
+app.get('/allsqls', function(req, res,next){
+	return res.json(sqls);
+});
 
 var server = app.listen(10000, function () {
 var host = server.address().address;
