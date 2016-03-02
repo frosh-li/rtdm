@@ -81,4 +81,41 @@ var query = function(sql,sqlCount, offset, limit){
 	});
 };
 
-module.exports = query;
+function queryall(sql){
+	return new Promise(function(resolve, reject){
+		if(!sql){
+			return reject('sql can not be empty');
+		}
+
+		options.body = JSON.stringify({
+			sql:sql,
+			acceptPartial: true,
+			project:'wanda'
+		});
+
+		request(options, function(err, res, body){
+			if(err){
+				return reject(err);
+			}
+
+			try{
+				var ret = JSON.parse(body);
+				// console.log('get data success', ret);
+				if(ret.exception){
+					console.log(ret.exception);
+					return reject(ret.exception+sql);
+				}
+				return resolve(ret.results);
+			}catch(error){				
+				return reject('can not parse data to json');
+			};
+		});	
+	}).catch(function(e){
+		console.log(e);
+	});
+}
+
+module.exports = {
+	query:query,
+	excel:queryall
+};
