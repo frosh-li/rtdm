@@ -13,6 +13,7 @@
     "express": "^4.13.4",
     "node-excel": "^0.5.0",
     "promise": "*",
-    "request": "^2.69.0"
+    "request": "^2.69.0",
+    "body-parser","*"
   }
 }
