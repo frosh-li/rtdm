@@ -66,10 +66,10 @@ Object.keys(sqls).forEach(function(item){
 		}
 			
 	  	var sqlCount = sqls[item]
-		  				  .replace(/select.*from+?/gi, 'select count(1) from')
-						  .replace(/group\s+by.*$/,"")
+		  				  
 						  .replace('{{start}}',start)
 						  .replace('{{end}}',end);
+		sqlCount = "select count(*) from (" + sqlCount + ")";
 		if(qFilter.length > 0){
 			sqlCount = sqlCount.replace('{{filters}}', " and " + qFilter.join(' and '));
 		}else{
@@ -107,7 +107,7 @@ app.get('/excel/'+item, function(req, res){
 	filters.forEach(function(filter){
 		var val = req.query[filter] && decodeURIComponent(req.query[filter]);
 		if(val && val.toLowerCase() !== "all" && val!="不限"){
-			qFilter.push(filter+"='"+val+"'");	
+			qFilter.push(filter+"='"+val+"'");
 		}
 	})
 	
