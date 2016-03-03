@@ -29,8 +29,8 @@ app.all('*', function(req, res, next) {
     next();  
 });  
 
+var filters = ['client_name','status', 'ORDER_STATUS'];
 
-console.log(sqls, Object.keys(sqls));
 Object.keys(sqls).forEach(function(item){
 	app.get('/api/'+item, function (req, res, next) {
 		var c_offset = parseInt(req.query.offset) || offset;
@@ -46,7 +46,6 @@ Object.keys(sqls).forEach(function(item){
 	    if(req.query.end && dateReg.test(req.query.end)){
 	    	end = req.query.end;
 	    }
-		var filters = ['client_name','status', 'ORDER_STATUS'];
 		var qFilter = [];
 		filters.forEach(function(filter){
 			var val = req.query[filter] && decodeURIComponent(req.query[filter]);
@@ -102,7 +101,7 @@ app.get('/excel/'+item, function(req, res){
 	if(req.query.end && dateReg.test(req.query.end)){
 		end = req.query.end;
 	}
-	var filters = ['client_name','status', 'ORDER_STATUS'];
+	
 	var qFilter = [];
 	filters.forEach(function(filter){
 		var val = req.query[filter] && decodeURIComponent(req.query[filter]);
