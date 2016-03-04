@@ -1,6 +1,7 @@
 
 
 module.exports = {
-	home : 'http://10.213.33.139:10080/',
+	home : 'http://10.213.1.167:10080/',
+	timeapi: 'http://admin.bi.ffan.com/security/interface/getDbTime',
 	authapi: 'http://bi.ffan.com/'
 };

@@ -193,6 +193,7 @@ var request = require('request');
 
 var CONFIG = require('./config.js');
 var authapi = CONFIG.authapi;
+var timeapi = CONFIG.timeapi;
 var homelink = CONFIG.home;
 app.get('/auth', function(req, res, next){
 	
@@ -202,26 +203,26 @@ app.get('/auth', function(req, res, next){
 	}
 	var sessionId = req.query.sessionId;
 	console.log('session id', sessionId)
-	request.get(authapi+'security/interface/getDbTime', function(err, _, data){
+	request.get(timeapi, function(err, _, data){
 		if(err){
 			console.log('auth fail');
-			return res.redirect(authapi + 'dataExplore/');
+			return res.redirect(authapi);
 		}
 		console.log(data);
 		var obj = JSON.parse(data);
-		var url = authapi+'dataExplore/interface_validateSession.do?sessionId='+sessionId+"&time="+obj.time;
+		var url = authapi+'interface_validateSession.do?sessionId='+sessionId+"&time="+obj.time;
 		console.log(url);
 		request.get(url, function(err,_, user){
 			if(err){
 				console.log('auth fail');
-				return res.redirect(authapi + 'dataExplore/');
+				return res.redirect(authapi);
 			}
 			console.log(user)
 			user = JSON.parse(user);
 			if(user.status){
 				req.session.user = user;
 			}else{
-				return res.redirect(authapi + 'dataExplore/');
+				return res.redirect(authapi);
 			}
 			res.redirect(homelink);
 		});
@@ -230,7 +231,7 @@ app.get('/auth', function(req, res, next){
 });
 app.get('/api/logout', function(req, res, next){
 	delete req.session.user;
-	res.redirect(authapi + 'dataExplore/');
+	res.redirect(authapi);
 });
 app.get('/api/userinfo', function(req, res,next){
 	return res.json(req.session.user);
