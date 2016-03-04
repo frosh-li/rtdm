@@ -4,11 +4,19 @@ var fs = require('fs');
 var path = require('path');
 var bodyParser = require('body-parser')
 var tableHeader = require('./header');
+var session = require('express-session');
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 
 // parse application/json
 app.use(bodyParser.json())
+app.use(session({
+	secret: '1234567890QWERTY',
+	name: 'srs',   //这里的name值得是cookie的name，默认cookie的name是：connect.sid
+	cookie: {maxAge: 80000 },  //设置maxAge是80000ms，即80s后session和相应的cookie失效过期
+	resave: false,
+	saveUninitialized: true,
+}));
 
 var getData = require('./server.js').query;
 
@@ -33,6 +41,10 @@ var filters = ['client_name','status', 'ORDER_STATUS'];
 
 Object.keys(sqls).forEach(function(item){
 	app.get('/api/'+item, function (req, res, next) {
+		console.log('current user',req.session.user);
+		if(!req.session.user){
+			return res.json({status: 301});
+		}
 		var c_offset = parseInt(req.query.offset) || offset;
 	    var c_limit = parseInt(req.query.limit) || limit;
 	    var end = new Date().toLocaleString().split(' ')[0];
@@ -175,7 +187,54 @@ app.post('/updateSql', function(req,res, next){
 	})
 })
 
+var request = require('request');
 
+
+
+var CONFIG = require('./config.js');
+var authapi = CONFIG.authapi;
+var homelink = CONFIG.home;
+app.get('/auth', function(req, res, next){
+	
+	if(req.session.user){
+		// 需要登录， 跳转到登录
+		return res.redirect(homelink);
+	}
+	var sessionId = req.query.sessionId;
+	console.log('session id', sessionId)
+	request.get(authapi+'security/interface/getDbTime', function(err, _, data){
+		if(err){
+			console.log('auth fail');
+			return res.redirect(authapi + 'dataExplore/');
+		}
+		console.log(data);
+		var obj = JSON.parse(data);
+		var url = authapi+'dataExplore/interface_validateSession.do?sessionId='+sessionId+"&time="+obj.time;
+		console.log(url);
+		request.get(url, function(err,_, user){
+			if(err){
+				console.log('auth fail');
+				return res.redirect(authapi + 'dataExplore/');
+			}
+			console.log(user)
+			user = JSON.parse(user);
+			if(user.status){
+				req.session.user = user;
+			}else{
+				return res.redirect(authapi + 'dataExplore/');
+			}
+			res.redirect(homelink);
+		});
+	});
+	console.log(req.query.sessionId);
+});
+app.get('/api/logout', function(req, res, next){
+	delete req.session.user;
+	res.redirect(authapi + 'dataExplore/');
+});
+app.get('/api/userinfo', function(req, res,next){
+	return res.json(req.session.user);
+});
 
 app.get('/allsqls', function(req, res,next){
 	return res.json(sqls);
@@ -187,3 +246,4 @@ var port = server.address().port;
 
   console.log('Example app listening at http://%s:%s', host, port);
 });
+

@@ -10,4 +10,4 @@ select T.DATEKEY,
 where A06_FFAN_SEARCH_HOTWORD_RANKING.DATEKEY >='{{start}}' and A06_FFAN_SEARCH_HOTWORD_RANKING.DATEKEY <= '{{end}}' {{filters}} 
          group by A06_FFAN_SEARCH_HOTWORD_RANKING.DATEKEY,
                   A06_FFAN_SEARCH_HOTWORD_RANKING.HOTWORD_NAME) T
- order by T.DATEKEY desc, T.SEARCH_PV desc;
+ order by T.DATEKEY desc, T.SEARCH_PV desc
