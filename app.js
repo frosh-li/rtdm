@@ -5,11 +5,13 @@ var path = require('path');
 var bodyParser = require('body-parser')
 var tableHeader = require('./header');
 var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 
 // parse application/json
 app.use(bodyParser.json())
+/*
 app.use(session({
 	secret: '1234567890QWERTY',
 	name: 'srs',   //这里的name值得是cookie的name，默认cookie的name是：connect.sid
@@ -17,7 +19,15 @@ app.use(session({
 	resave: false,
 	saveUninitialized: true,
 }));
-
+*/
+app.use(session({
+    store: new FileStore,
+    secret: '1234567890QWERTY',
+    resave: true,
+	cookie: {maxAge: 80000},
+    saveUninitialized: true
+  })
+);
 var getData = require('./server.js').query;
 
 var getDataAll = require('./server.js').excel;

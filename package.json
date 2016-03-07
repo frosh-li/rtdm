@@ -9,12 +9,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "*",
     "excel-export": "^0.5.1",
     "express": "^4.13.4",
     "node-excel": "^0.5.0",
     "promise": "*",
     "request": "^2.69.0",
-    "body-parser": "*"
+    "session-file-store": "^0.2.0"
   },
   "devDependencies": {
     "express-session": "^1.13.0"
