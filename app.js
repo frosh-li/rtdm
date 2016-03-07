@@ -38,6 +38,10 @@ var limit = 10;
 var sqls = require('./sqls/index.js');
 var nodeExcel = require('excel-export');
 
+
+console.log('current env', JSON.stringify(process.env.NODE_ENV));
+
+
 //设置跨域访问  
 app.all('*', function(req, res, next) {  
     res.header("Access-Control-Allow-Origin", "*");  
@@ -51,10 +55,13 @@ var filters = ['client_name','status', 'ORDER_STATUS'];
 
 Object.keys(sqls).forEach(function(item){
 	app.get('/api/'+item, function (req, res, next) {
-		console.log('current user',req.session.user);
-		if(!req.session.user){
+		
+		if(!req.session.user && process.env.NODE_ENV === "prod"){
+			// 只有生产环境才使用权限验证
 			return res.json({status: 301});
 		}
+		
+		
 		var c_offset = parseInt(req.query.offset) || offset;
 	    var c_limit = parseInt(req.query.limit) || limit;
 	    var end = new Date().toLocaleString().split(' ')[0];
@@ -173,6 +180,9 @@ app.get('/excel/'+item, function(req, res){
 });
 
 app.post('/updateSql', function(req,res, next){
+	if(process.env.NODE_ENV === "prod"){
+		return res.json({status:500,msg:'生产环境无法使用'});
+	}
 	console.log(req.body);
 	var filename = req.body.name;
 	if(!/^[a-z]+$/.test(filename)){
@@ -248,6 +258,9 @@ app.get('/api/userinfo', function(req, res,next){
 });
 
 app.get('/allsqls', function(req, res,next){
+	if(process.env.NODE_ENV === "prod"){
+		return res.json({status:500,msg:'生产环境无法使用'});
+	}
 	return res.json(sqls);
 });
 
