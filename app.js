@@ -10,7 +10,7 @@ var FileStore = require('session-file-store')(session);
 app.use(bodyParser.urlencoded({ extended: false }))
 
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 /*
 app.use(session({
 	secret: '1234567890QWERTY',
@@ -21,7 +21,7 @@ app.use(session({
 }));
 */
 app.use(session({
-    store: new FileStore,
+    store: new FileStore(),
     secret: '1234567890QWERTY',
     resave: true,
 	cookie: {maxAge: 80000},
