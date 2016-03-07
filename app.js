@@ -78,7 +78,7 @@ Object.keys(sqls).forEach(function(item){
 		var qFilter = [];
 		filters.forEach(function(filter){
 			var val = req.query[filter] && decodeURIComponent(req.query[filter]);
-			if(val && val.toLowerCase() !== "all" && val!="不限"){
+			if(val && val!="不限"){
 				qFilter.push(filter+"='"+val+"'");	
 			}
 		})
@@ -134,7 +134,7 @@ app.get('/excel/'+item, function(req, res){
 	var qFilter = [];
 	filters.forEach(function(filter){
 		var val = req.query[filter] && decodeURIComponent(req.query[filter]);
-		if(val && val.toLowerCase() !== "all" && val!="不限"){
+		if(val && val!="不限"){
 			qFilter.push(filter+"='"+val+"'");
 		}
 	})
