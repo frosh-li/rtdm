@@ -254,7 +254,7 @@ app.get('/api/logout', function(req, res, next){
 	res.redirect(authapi);
 });
 app.get('/api/userinfo', function(req, res,next){
-	return res.json(req.session.user);
+	return res.json(req.session.user || {username:"nouser"});
 });
 
 app.get('/allsqls', function(req, res,next){
