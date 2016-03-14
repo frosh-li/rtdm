@@ -264,6 +264,10 @@ app.get('/allsqls', function(req, res,next){
 	return res.json(sqls);
 });
 
+app.get('/api/plaza_data', function(req, res, next){
+	return res.json(require('./plaza.json'));
+})
+
 var server = app.listen(10081, function () {
 var host = server.address().address;
 var port = server.address().port;
