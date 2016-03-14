@@ -24,7 +24,7 @@ app.use(session({
     store: new FileStore(),
     secret: '1234567890QWERTY',
     resave: true,
-	cookie: {maxAge: 80000},
+	cookie: {maxAge: 1000*60*30},
     saveUninitialized: true
   })
 );
