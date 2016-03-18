@@ -349,7 +349,6 @@ module.exports = {
 		"shanghuappyewu": {
 			"cols_0": "日期",
 			"cols_1": "日核销券码量",
-			"cols_2": "日发布优惠券量",
 			"cols_3": "日提交闪购商品量"
 		},
 		"feifanappxingneng": {
@@ -358,7 +357,6 @@ module.exports = {
 			"cols_2": "启动次数",
 			"cols_3": "app人均使用时长",
 			"cols_4": "崩溃率（非正常退出）",
-			"cols_5": "平均响应时长（一级页面）",
 			"cols_6": "冷启动时长"
 		},
 		"feifanappliuliang": {
