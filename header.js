@@ -279,7 +279,6 @@ module.exports = {
 		},
 		"gouwushangpinzhuanti": {
 			"cols_0": "日期",
-			"cols_1": "客户端",
 			"cols_2": "门店商品累积总数",
 			"cols_3": "当日前台展示门店商品总数",
 			"cols_4": "当日新增门店商品数量",
