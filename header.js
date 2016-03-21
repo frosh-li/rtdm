@@ -356,7 +356,7 @@ module.exports = {
 			"cols_2": "启动次数",
 			"cols_3": "app人均使用时长(s)",
 			"cols_4": "崩溃率（非正常退出）",
-			"cols_6": "冷启动时长"
+			"cols_6": "冷启动时长(s)"
 		},
 		"feifanappliuliang": {
 			"cols_0": "日期",
