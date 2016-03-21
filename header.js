@@ -68,7 +68,7 @@ module.exports = {
 			'coupon_order': '使用券的订单数',
 			'act_total': '使用活动的订单数',
 			'coupon_act_total': '同时使用券和活动的订单数',
-			'park_avg': '停车平均时长'
+			'park_avg': '停车平均时长(hour)'
 		},
 		'carmember': {
 			'date': '日期',
@@ -354,7 +354,7 @@ module.exports = {
 			"cols_0": "日期",
 			"cols_1": "客户端",
 			"cols_2": "启动次数",
-			"cols_3": "app人均使用时长",
+			"cols_3": "app人均使用时长(s)",
 			"cols_4": "崩溃率（非正常退出）",
 			"cols_6": "冷启动时长"
 		},
@@ -369,6 +369,6 @@ module.exports = {
 			"cols_1": "新增会员",
 			"cols_2": "累计会员",
 			"cols_3": "日活跃会员",
-			"cols_4": "日留存率"
+			"cols_4": "日留存率(%)"
 		}
 	};
