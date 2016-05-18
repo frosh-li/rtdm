@@ -51,7 +51,8 @@ app.all('*', function(req, res, next) {
     next();  
 });  
 
-var filters = ['client_name','status', 'ORDER_STATUS','APP_TYPE', "PLAZA_NAME","ORDER_CODE_name"];
+var filters = ['client_name','status', 'ORDER_STATUS','APP_TYPE', "PLAZA_NAME","ORDER_CODE_name",
+				'TYPE','APP_VERSION','EVENT_PAGE','PAGE_BUTTON','TITLE'];
 
 Object.keys(sqls).forEach(function(item){
 	app.get('/api/'+item, function (req, res, next) {

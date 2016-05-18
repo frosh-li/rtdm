@@ -370,5 +370,17 @@ module.exports = {
 			"cols_2": "累计会员",
 			"cols_3": "日活跃会员",
 			"cols_4": "日留存率(%)"
+		},
+		"ffanappburypoint": {
+			"cols_0": "日期",
+			"cols_1": "访问类型",
+			"cols_2": "操作系统类型",
+			"cols_3": "app版本",
+			"cols_4": "埋点ID",
+			"cols_5": "埋点页面名称",
+			"cols_6": "埋点页面按钮功能",
+			"cols_7": "一级标题",
+			"cols_8": "点击次数pv",
+			"cols_9": "去重点击次数uv"
 		}
 	};
