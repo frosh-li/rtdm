@@ -37,6 +37,7 @@ var limit = 10;
 
 var sqls = require('./sqls/index.js');
 var nodeExcel = require('excel-export');
+var queryallAll = require('./server.js').queryallAll;
 
 
 console.log('current env', JSON.stringify(process.env.NODE_ENV));
@@ -53,6 +54,74 @@ app.all('*', function(req, res, next) {
 
 var filters = ['client_name','status', 'ORDER_STATUS','APP_TYPE', "PLAZA_NAME","ORDER_CODE_name",
 				'TYPE','APP_VERSION','EVENT_PAGE','PAGE_BUTTON','TITLE'];
+Object.keys(sqls).forEach(function (item) {
+    app.get('/apiall/' + item, function (req, res, next) {
+
+
+        var c_offset = parseInt(req.query.offset) || offset;
+        var c_limit = parseInt(req.query.limit) || limit;
+        var end = new Date().toLocaleString().split(' ')[0];
+        var start = new Date(+new Date() - 7 * 24 * 60 * 60 * 1000).toLocaleString().split(' ')[0];
+        var dateReg = /^[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}$/;
+
+        if (req.query.start && dateReg.test(req.query.start)) {
+            start = req.query.start;
+        }
+
+        if (req.query.end && dateReg.test(req.query.end)) {
+            end = req.query.end;
+        }
+
+        var qFilter = [];
+        filters.forEach(function (filter) {
+            console.log(req.query[filter]);
+            var val = req.query[filter] && decodeURIComponent(req.query[filter]);
+            if (val && val != "不限") {
+                qFilter.push("" + val + "");
+            }
+        })
+
+
+        var sql = sqls[item]
+            .replace('{{start}}', start)
+            .replace('{{end}}', end);
+        if (qFilter.length > 0) {
+            sql = sql.replace('{{filters}}', "" + qFilter);
+        } else {
+            sql = sql.replace('{{filters}}', "");
+        }
+
+        var sqlCount = sqls[item]
+
+            .replace('{{start}}', start)
+            .replace('{{end}}', end);
+        sqlCount = "select count(*) from (" + sqlCount + ")";
+        if (qFilter.length > 0) {
+            sqlCount = sqlCount.replace('{{filters}}', "" + qFilter);
+        } else {
+            sqlCount = sqlCount.replace('{{filters}}', "");
+        }
+        // res.json({status: 200, data: sql});
+        console.log(sql);
+        console.log(sqlCount);
+        if (req.query.offset === "" || req.query.offset === undefined) {
+            queryallAll(sql, sqlCount).then(function (ret) {
+                res.json({stauts: 200, data: ret.data});
+            }).catch(function (e) {
+                console.log(e);
+                res.json({status: 500, msg: '服务器故障', detail: e.message});
+            });
+        } else {
+            getData(sql, sqlCount, c_offset, c_limit).then(function (ret) {
+                res.json({stauts: 200, data: ret.data, total: ret.total, page: c_offset / c_limit + 1});
+            }).catch(function (e) {
+                console.log(e);
+                res.json({status: 500, msg: '服务器故障', detail: e.message});
+            });
+        }
+
+    });
+});
 
 Object.keys(sqls).forEach(function(item){
 	app.get('/api/'+item, function (req, res, next) {

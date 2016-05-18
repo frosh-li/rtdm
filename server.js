@@ -81,7 +81,7 @@ var query = function(sql,sqlCount, offset, limit){
 	});
 };
 
-function queryall(sql){
+function queryExcel(sql){
 	return new Promise(function(resolve, reject){
 		if(!sql){
 			return reject('sql can not be empty');
@@ -114,8 +114,70 @@ function queryall(sql){
 		console.log(e);
 	});
 }
+function queryall(sql){
+	return new Promise(function(resolve, reject){
+		if(!sql){
+			return reject('sql can not be empty');
+		}
 
+		options.body = JSON.stringify({
+			sql:sql,
+			acceptPartial: true,
+			project:'wanda'
+		});
+
+		request(options, function(err, res, body){
+			if(err){
+				return reject(err);
+			}
+
+			try{
+				var ret = JSON.parse(body);
+				// console.log('get data success', ret);
+				if(ret.exception){
+					console.log(ret.exception);
+					return reject(ret.exception+sql);
+				}
+				return resolve(ret.results);
+			}catch(error){				
+				return reject('can not parse data to json');
+			};
+		});	
+	}).then(function(results){
+		options.body = JSON.stringify({
+			acceptPartial: true,
+			project:'wanda'
+
+		});
+		return new Promise(function(resolve, reject){
+			request(options, function(err, res, body){
+				if(err){
+					return reject(err);
+				}
+
+				try{
+					var ret = JSON.parse(body);
+					// console.log('get data success', ret);
+					if(ret.exception){
+						console.log(ret.exception);
+						return reject(ret.exception);
+					}
+					return resolve({
+						data: results,
+						total: parseInt(ret.results && ret.results[0] && ret.results[0][0]) || 0
+					});
+				}catch(error){
+					console.log(body)				
+					return reject('can not parse data to json count');
+				};
+			});	
+		});
+	}).catch(function(e){
+		console.log(e);
+	});
+}
 module.exports = {
 	query:query,
-	excel:queryall
+	excel:queryExcel,
+	queryallAll: queryall
 };
