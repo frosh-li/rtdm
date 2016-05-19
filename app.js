@@ -55,7 +55,7 @@ app.all('*', function(req, res, next) {
 var filters = ['client_name','status', 'ORDER_STATUS','APP_TYPE', "PLAZA_NAME","ORDER_CODE_name",
 				'TYPE','APP_VERSION','EVENT_PAGE','PAGE_BUTTON','TITLE'];
 Object.keys(sqls).forEach(function (item) {
-    app.get('/apiall/' + item, function (req, res, next) {
+    app.get('/api/all/' + item, function (req, res, next) {
 
 
         var c_offset = parseInt(req.query.offset) || offset;
