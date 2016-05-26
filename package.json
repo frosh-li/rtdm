@@ -1,5 +1,5 @@
 {
-  "name": "srs_api",
+  "name": "rtdm_api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,7 +15,8 @@
     "node-excel": "^0.5.0",
     "promise": "*",
     "request": "^2.69.0",
-    "session-file-store": "^0.2.0"
+    "session-file-store": "^0.2.0",
+    "socket.io": "^1.4.6"
   },
   "devDependencies": {
     "express-session": "^1.13.0"

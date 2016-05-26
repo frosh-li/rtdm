@@ -3,9 +3,9 @@ var app = express();
 var fs = require('fs');
 var path = require('path');
 var bodyParser = require('body-parser')
-var tableHeader = require('./header');
+
 var session = require('express-session');
-var FileStore = require('session-file-store')(session);
+
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 
@@ -20,24 +20,15 @@ app.use(session({
 	saveUninitialized: true,
 }));
 */
-app.use(session({
-    store: new FileStore(),
-    secret: '1234567890QWERTY',
-    resave: true,
-	cookie: {maxAge: 1000*60*30},
-    saveUninitialized: true
-  })
-);
-var getData = require('./server.js').query;
+// app.use(session({
+//     store: new FileStore(),
+//     secret: '1234567890QWERTY',
+//     resave: true,
+// 	cookie: {maxAge: 1000*60*30},
+//     saveUninitialized: true
+//   })
+// );
 
-var getDataAll = require('./server.js').excel;
-
-var offset = 0;
-var limit = 10;
-
-var sqls = require('./sqls/index.js');
-var nodeExcel = require('excel-export');
-var queryallAll = require('./server.js').queryallAll;
 
 
 console.log('current env', JSON.stringify(process.env.NODE_ENV));
@@ -52,234 +43,22 @@ app.all('*', function(req, res, next) {
     next();  
 });  
 
-var filters = ['client_name','status', 'ORDER_STATUS','APP_TYPE', "PLAZA_NAME","ORDER_CODE_name",
-				'TYPE','APP_VERSION','EVENT_PAGE','PAGE_BUTTON','TITLE'];
-Object.keys(sqls).forEach(function (item) {
-    app.get('/api/all/' + item, function (req, res, next) {
 
-
-        var c_offset = parseInt(req.query.offset) || offset;
-        var c_limit = parseInt(req.query.limit) || limit;
-        var end = new Date().toLocaleString().split(' ')[0];
-        var start = new Date(+new Date() - 7 * 24 * 60 * 60 * 1000).toLocaleString().split(' ')[0];
-        var dateReg = /^[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}$/;
-
-        if (req.query.start && dateReg.test(req.query.start)) {
-            start = req.query.start;
-        }
-
-        if (req.query.end && dateReg.test(req.query.end)) {
-            end = req.query.end;
-        }
-
-        var qFilter = [];
-        filters.forEach(function (filter) {
-            console.log(req.query[filter]);
-            var val = req.query[filter] && decodeURIComponent(req.query[filter]);
-            if (val && val != "不限") {
-                qFilter.push("" + val + "");
-            }
-        })
-
-
-        var sql = sqls[item]
-            .replace('{{start}}', start)
-            .replace('{{end}}', end);
-        if (qFilter.length > 0) {
-            sql = sql.replace('{{filters}}', "" + qFilter);
-        } else {
-            sql = sql.replace('{{filters}}', "");
-        }
-
-        var sqlCount = sqls[item]
-
-            .replace('{{start}}', start)
-            .replace('{{end}}', end);
-        sqlCount = "select count(*) from (" + sqlCount + ")";
-        if (qFilter.length > 0) {
-            sqlCount = sqlCount.replace('{{filters}}', "" + qFilter);
-        } else {
-            sqlCount = sqlCount.replace('{{filters}}', "");
-        }
-        // res.json({status: 200, data: sql});
-        console.log(sql);
-        console.log(sqlCount);
-        if (req.query.offset === "" || req.query.offset === undefined) {
-            queryallAll(sql, sqlCount).then(function (ret) {
-                res.json({stauts: 200, data: ret.data});
-            }).catch(function (e) {
-                console.log(e);
-                res.json({status: 500, msg: '服务器故障', detail: e.message});
-            });
-        } else {
-            getData(sql, sqlCount, c_offset, c_limit).then(function (ret) {
-                res.json({stauts: 200, data: ret.data, total: ret.total, page: c_offset / c_limit + 1});
-            }).catch(function (e) {
-                console.log(e);
-                res.json({status: 500, msg: '服务器故障', detail: e.message});
-            });
-        }
-
-    });
-});
-
-Object.keys(sqls).forEach(function(item){
-	app.get('/api/'+item, function (req, res, next) {
-		
-		if(!req.session.user && process.env.NODE_ENV === "prod"){
-			// 只有生产环境才使用权限验证
-			return res.json({status: 301});
-		}
-		
-		
-		var c_offset = parseInt(req.query.offset) || offset;
-	    var c_limit = parseInt(req.query.limit) || limit;
-	    var end = new Date().toLocaleString().split(' ')[0];
-	    var start = new Date(+new Date() - 7*24*60*60*1000).toLocaleString().split(' ')[0];
-	    var dateReg = /^[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}$/;
-
-	    if(req.query.start && dateReg.test(req.query.start)){
-	    	start = req.query.start;
-	    }
-
-	    if(req.query.end && dateReg.test(req.query.end)){
-	    	end = req.query.end;
-	    }
-		var qFilter = [];
-		filters.forEach(function(filter){
-			var val = req.query[filter] && decodeURIComponent(req.query[filter]);
-			if(val && val!="不限"){
-				qFilter.push(filter+"='"+val+"'");	
-			}
-		})
-		
-
-	  	var sql = sqls[item]
-		  			.replace('{{start}}',start)
-					.replace('{{end}}',end);
-		if(qFilter.length > 0){
-			sql = sql.replace('{{filters}}', " and " + qFilter.join(' and '));
-		}else{
-			sql = sql.replace('{{filters}}', "");
-		}
-			
-	  	var sqlCount = sqls[item]
-		  				  
-						  .replace('{{start}}',start)
-						  .replace('{{end}}',end);
-		sqlCount = "select count(*) from (" + sqlCount + ")";
-		if(qFilter.length > 0){
-			sqlCount = sqlCount.replace('{{filters}}', " and " + qFilter.join(' and '));
-		}else{
-			sqlCount = sqlCount.replace('{{filters}}', "");
-		}
-	  	// res.json({status: 200, data: sql});
-	  	console.log(sql);
-		console.log(sqlCount);
-		getData(sql,sqlCount, c_offset, c_limit).then(function(ret){
-			res.json({stauts:200, data: ret.data, total:ret.total, page: c_offset/c_limit + 1});	
-		}).catch(function(e){
-			console.log(e);
-			res.json({status: 500, msg:'服务器故障',detail:e.message});
-		});
-	});
-});
-Object.keys(sqls).forEach(function(item){
-app.get('/excel/'+item, function(req, res){
-  	var conf ={};
-	// conf.stylesXmlFile = "styles.xml";
-    conf.name = item;
-	var end = new Date().toLocaleString().split(' ')[0];
-	var start = new Date(+new Date() - 7*24*60*60*1000).toLocaleString().split(' ')[0];
-	var dateReg = /^[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}$/;
-
-	if(req.query.start && dateReg.test(req.query.start)){
-		start = req.query.start;
-	}
-
-	if(req.query.end && dateReg.test(req.query.end)){
-		end = req.query.end;
-	}
-	
-	var qFilter = [];
-	filters.forEach(function(filter){
-		var val = req.query[filter] && decodeURIComponent(req.query[filter]);
-		if(val && val!="不限"){
-			qFilter.push(filter+"='"+val+"'");
-		}
-	})
-	
-
-	var sql = sqls[item]
-				.replace('{{start}}',start)
-				.replace('{{end}}',end);
-	if(qFilter.length > 0){
-		sql = sql.replace('{{filters}}', " and " + qFilter.join(' and '));
-	}else{
-		sql = sql.replace('{{filters}}', "");
-	}
-	conf.cols = [];
-	for(var key in tableHeader[item]){
-		var __item = 	tableHeader[item][key];
-		conf.cols.push({
-			caption:__item,
-			type:'string'
-		})
-	};
-
-	getDataAll(sql).then(function(ret){
-		conf.rows = ret;
-
-		// ret.forEach(function(item){
-		// 	conf.cols.push({
-		// 		caption:'string',
-		// 		type:'string'				
-		// 	})
-		// });
-		var result = nodeExcel.execute(conf);
-  		res.setHeader('Content-Type', 'application/vnd.openxmlformats');
-  		res.setHeader("Content-Disposition", "attachment; filename=" +item+ ".xlsx");
-  		res.end(result, 'binary');
-		// res.json({stauts:200, data: ret.data, total:ret.total, page: c_offset/c_limit + 1});	
-	}).catch(function(e){
-		console.log(e);
-		res.json({status: 500, msg:'服务器故障',detail:e.message});
-	});
-  	
-});
-});
-
-app.post('/updateSql', function(req,res, next){
-	if(process.env.NODE_ENV === "prod"){
-		return res.json({status:500,msg:'生产环境无法使用'});
-	}
-	console.log(req.body);
-	var filename = req.body.name;
-	if(!/^[a-z]+$/.test(filename)){
-		return res.json({
-			status: 500,
-			msg:'只能输入英文'
-		})
-	}
-	var sqlContent = req.body.sql;
-	fs.writeFile(path.resolve(__dirname+"/sqls/"+filename+".sql"), sqlContent, function(err, data){
-		if(err){
-			return res.json({
-				status: 500,
-				msg:'写文件出错'
-			})
-		}
-		res.json({
-			status:200,
-			msg:'提交成功',
-			sql: data
-		})
-	})
-})
 
 var request = require('request');
 
+global.plazaList = [];
 
+request('https://api.ffan.com/cdaservice/v3/citys/cityPlazas', function(err,_,data){
+	try{
+		data = JSON.parse(data);
+	}catch(e){
+		throw new Error(e);
+	}
+	data.data.forEach(function(item){
+		global.plazaList = global.plazaList.concat(item.plazaList);
+	})
+})
 
 var CONFIG = require('./config.js');
 var authapi = CONFIG.authapi;
@@ -327,16 +106,7 @@ app.get('/api/userinfo', function(req, res,next){
 	return res.json(req.session.user || {username:"nouser"});
 });
 
-app.get('/allsqls', function(req, res,next){
-	if(process.env.NODE_ENV === "prod"){
-		return res.json({status:500,msg:'生产环境无法使用'});
-	}
-	return res.json(sqls);
-});
 
-app.get('/api/plaza_data', function(req, res, next){
-	return res.json(require('./plaza.json'));
-})
 
 var server = app.listen(10081, function () {
 var host = server.address().address;
@@ -345,3 +115,19 @@ var port = server.address().port;
   console.log('Example app listening at http://%s:%s', host, port);
 });
 
+
+var io = require('socket.io')(server);
+
+
+io.on( "connection", function( socket ){
+    console.log( "一个新连接" );
+    io.sockets.emit('allmap', {plaza: plazaList});
+});
+
+
+setInterval(function(){
+	if(plazaList){
+		io.sockets.emit('change', {plaza: plazaList[Math.random()*plazaList.length >> 0] });
+	}
+	
+},100);
