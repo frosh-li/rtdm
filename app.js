@@ -8,6 +8,17 @@ var redisClient = redis.createClient({
 	host: 'w10551.sit.wdds.redis.com',
 	port: 10551
 })
+var shakeClient = redis.createClient({
+	host: 'w10551.sit.wdds.redis.com',
+	port: 10551
+})
+
+var memberClient = redis.createClient({
+	host: 'w10551.sit.wdds.redis.com',
+	port: 10551
+})
+
+
 var session = require('express-session');
 
 // parse application/x-www-form-urlencoded
@@ -53,6 +64,7 @@ var request = require('request');
 
 global.plazaList = [];
 global.plazaMap = {};
+global.cityMap = {};
 
 request('https://api.ffan.com/cdaservice/v3/citys/cityPlazas', function(err,_,data){
 	try{
@@ -61,11 +73,17 @@ request('https://api.ffan.com/cdaservice/v3/citys/cityPlazas', function(err,_,da
 		throw new Error(e);
 	}
 	data.data.forEach(function(item){
-		global.plazaList = global.plazaList.concat(item.plazaList);
+		for(var i = 0 ; i < item.plazaList.length ; i++){
+			if(item.plazaList[i].plazaLatitude && item.plazaList[i].plazaLongitude){
+				global.plazaList.push(item.plazaList[i]);
+				global.cityMap[item.cityId] = item.plazaList[i];
+			}
+		}
 	})
 	global.plazaList.forEach(function(_){
 		global.plazaMap[_.plazaId] = _;
 	})
+
 })
 
 var CONFIG = require('./config.js');
@@ -136,10 +154,10 @@ io.on( "connection", function( socket ){
 redisClient.on('ready', function(){
 	console.log('redis client ready, start sub');
 	redisClient.subscribe('ps_ffan_bi3_app_device', function(err, data){
-		console.log(data);
+		//console.log(data);
 	})
 	redisClient.on('message', function(channel, msg){
-		console.log(msg);
+		//console.log(msg);
 		if(plazaMap[msg]){
 			io.sockets.emit('change', {plaza: plazaMap[msg], type:'device' });
 		}else{
@@ -147,4 +165,58 @@ redisClient.on('ready', function(){
 		}
 	})
 })
+
+shakeClient.on('ready', function(){
+	console.log('redis client ready, start sub');
+	shakeClient.subscribe('pubsub_ffan_bi3_page_shake', function(err, data){
+		//console.log(data);
+	})
+	shakeClient.on('message', function(channel, msg){
+		//console.log(msg);
+		if(cityMap[msg]){
+			io.sockets.emit('change', {plaza: cityMap[msg], type:'shake' });
+		}else{
+			console.log('找不到对应城市ID');
+		}
+	})
+	randomPoint();
+})
+
+//新用户的pubsub
+memberClient.on('ready', function(){
+	console.log('redis client ready, start sub new member');
+	memberClient.subscribe('pubsub_ffan_bi3_new_member', function(err, data){
+		//console.log(data);
+	})
+	memberClient.on('message', function(channel, msg){
+		//console.log(msg);
+		if(plazaMap[msg]){
+			io.sockets.emit('change', {plaza: plazaMap[msg], type:'member' });
+		}else{
+			console.log('找不到对应广场ID');
+		}
+	})
+})
+
+
+
+function randomPoint(){
+	var type = Math.random()*3 >> 0;
+	if(type == 1){
+		var allkeys = Object.keys(cityMap);
+		io.sockets.emit('change', {
+			plaza: cityMap[allkeys[Math.random()*allkeys.length >> 0]],
+			type:'shake'
+		})
+	}else if(type == 2){
+		var pkeys = Object.keys(plazaMap);
+		io.sockets.emit('change', {plaza: plazaMap[pkeys[Math.random()*pkeys.length >> 0]], type:'device' });
+	}else {
+		var pkeys = Object.keys(plazaMap);
+		io.sockets.emit('change', {plaza: plazaMap[pkeys[Math.random()*pkeys.length >> 0]], type:'member' });
+	}
+	setTimeout(randomPoint, 1000);
+}
+
+
 
