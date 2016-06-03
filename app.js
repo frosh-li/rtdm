@@ -212,10 +212,10 @@ memberClient.on('ready', function(){
 // beacon搖一搖
 beaconClient.on('ready', function(){
 	console.log('redis client ready, start sub new member');
-	memberClient.subscribe('ffan_bi3_beacon_shake|pubsub', function(err, data){
+	beaconClient.subscribe('ffan_bi3_beacon_shake|pubsub', function(err, data){
 		//console.log(data);
 	})
-	memberClient.on('message', function(channel, msg){
+	beaconClient.on('message', function(channel, msg){
 		//console.log(msg);
 		if(plazaMap[msg]){
 			io.sockets.emit('change', {plaza: plazaMap[msg], type:'beacon' });
@@ -228,10 +228,10 @@ beaconClient.on('ready', function(){
 // beacon搖一搖
 gmvClient.on('ready', function(){
 	console.log('redis client ready, start sub trade');
-	memberClient.subscribe('ffan-bi3-trade|pubsub', function(err, data){
+	gmvClient.subscribe('ffan-bi3-trade|pubsub', function(err, data){
 		//console.log(data);
 	})
-	memberClient.on('message', function(channel, msg){
+	gmvClient.on('message', function(channel, msg){
 		//console.log(msg);
 		if(plazaMap[msg]){
 			io.sockets.emit('change', {plaza: plazaMap[msg], type:'gmv' });
