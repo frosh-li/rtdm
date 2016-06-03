@@ -18,6 +18,16 @@ var memberClient = redis.createClient({
 	port: 10551
 })
 
+var gmvClient = redis.createClient({
+	host: 'w10551.sit.wdds.redis.com',
+	port: 10551
+})
+
+var beaconClient = redis.createClient({
+	host: 'w10551.sit.wdds.redis.com',
+	port: 10551
+})
+
 
 var session = require('express-session');
 
@@ -152,8 +162,8 @@ io.on( "connection", function( socket ){
 
 
 redisClient.on('ready', function(){
-	console.log('redis client ready, start sub');
-	redisClient.subscribe('ps_ffan_bi3_app_device', function(err, data){
+	console.log('redis client ready, start sub device');
+	redisClient.subscribe('ffan_bi3_app_device|pubsub', function(err, data){
 		//console.log(data);
 	})
 	redisClient.on('message', function(channel, msg){
@@ -167,8 +177,8 @@ redisClient.on('ready', function(){
 })
 
 shakeClient.on('ready', function(){
-	console.log('redis client ready, start sub');
-	shakeClient.subscribe('pubsub_ffan_bi3_page_shake', function(err, data){
+	console.log('redis client ready, start sub shake');
+	shakeClient.subscribe('ffan_bi3_page_shake|pubsub', function(err, data){
 		//console.log(data);
 	})
 	shakeClient.on('message', function(channel, msg){
@@ -179,13 +189,14 @@ shakeClient.on('ready', function(){
 			console.log('找不到对应城市ID');
 		}
 	})
-	randomPoint();
+	// randomPoint();
 })
+
 
 //新用户的pubsub
 memberClient.on('ready', function(){
 	console.log('redis client ready, start sub new member');
-	memberClient.subscribe('pubsub_ffan_bi3_new_member', function(err, data){
+	memberClient.subscribe('ffan_bi3_new_member|pubsub', function(err, data){
 		//console.log(data);
 	})
 	memberClient.on('message', function(channel, msg){
@@ -198,6 +209,37 @@ memberClient.on('ready', function(){
 	})
 })
 
+// beacon搖一搖
+beaconClient.on('ready', function(){
+	console.log('redis client ready, start sub new member');
+	memberClient.subscribe('ffan_bi3_beacon_shake|pubsub', function(err, data){
+		//console.log(data);
+	})
+	memberClient.on('message', function(channel, msg){
+		//console.log(msg);
+		if(plazaMap[msg]){
+			io.sockets.emit('change', {plaza: plazaMap[msg], type:'beacon' });
+		}else{
+			console.log('找不到对应广场ID');
+		}
+	})
+})
+
+// beacon搖一搖
+gmvClient.on('ready', function(){
+	console.log('redis client ready, start sub trade');
+	memberClient.subscribe('ffan-bi3-trade|pubsub', function(err, data){
+		//console.log(data);
+	})
+	memberClient.on('message', function(channel, msg){
+		//console.log(msg);
+		if(plazaMap[msg]){
+			io.sockets.emit('change', {plaza: plazaMap[msg], type:'gmv' });
+		}else{
+			console.log('找不到对应广场ID');
+		}
+	})
+})
 
 
 function randomPoint(){
@@ -215,7 +257,7 @@ function randomPoint(){
 		var pkeys = Object.keys(plazaMap);
 		io.sockets.emit('change', {plaza: plazaMap[pkeys[Math.random()*pkeys.length >> 0]], type:'member' });
 	}
-	setTimeout(randomPoint, 1000);
+	setTimeout(randomPoint, 5);
 }
 
 
